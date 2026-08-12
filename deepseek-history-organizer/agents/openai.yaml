@@ -1,0 +1,4 @@
+interface:
+  display_name: "DeepSeek 对话记录整理"
+  short_description: "把 DeepSeek 导出的对话记录整理成可搜索网页或 Markdown 摘要"
+  default_prompt: "Use $deepseek-history-organizer to organize my exported DeepSeek chat archive into a searchable local page."

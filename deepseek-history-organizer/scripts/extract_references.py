@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""Extract references and web links from normalized DeepSeek conversations.
+
+Scans assistant messages for URLs and citation-like fragments, then writes a
+Markdown appendix with a fixed reliability disclaimer. Use it so AI-generated
+references can be checked against authoritative databases later.
+
+Usage:
+  python extract_references.py <conversations.normalized.json> [-o references.md | --append 归纳.md]
+"""
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+URL_RE = re.compile(r"https?://[^\s<>\"')\]]+", re.I)
+CITATION_RE = re.compile(
+    r"参考文献|参考来源|来源[:：]|引自|DOI[:：]?\s*\S+|doi\.org|PubMed|Web of Science|知网|万方|ScienceDirect",
+    re.I,
+)
+YEAR_RE = re.compile(r"\(?\s*(?:19|20)\d{2}\s*\)?")
+ETAL_RE = re.compile(r"\bet al\.", re.I)
+MARKER_RE = re.compile(r"\*[^*]{2,120}\*")
+AUTHOR_START_RE = re.compile(r"^\s*(?:[-*+]\s+|\d+[.、)]\s+)?\*{0,2}[A-Z][A-Za-z\u00C0-\u024F.\-]+")
+
+
+def is_citation(line):
+    if len(line) > 300 or line.startswith("#"):
+        return False
+    if CITATION_RE.search(line):
+        return True
+    if not YEAR_RE.search(line):
+        return False
+    return bool(ETAL_RE.search(line) or MARKER_RE.search(line) or AUTHOR_START_RE.match(line))
+
+DISCLAIMER = (
+    "> 可靠性提示：以下网页链接与文献引用由 DeepSeek 在对话中检索或生成，可能存在编造、拼接或不准确之处；"
+    "AI 检索到的网络信息也不如专门数据库（如 PubMed、Web of Science、知网、万方等）可靠。"
+    "引用前务必与权威数据库核对原文。对话中的讨论、分析与结论仅供参考，不作为正式依据。"
+)
+
+
+def extract(normalized):
+    conversations = normalized.get("conversations", [])
+    links = []
+    citations = []
+    seen_links = set()
+    seen_cites = set()
+    for conv in conversations:
+        title = conv.get("title", "未命名对话")
+        for i, msg in enumerate(conv.get("messages", []), 1):
+            if msg.get("role") != "assistant":
+                continue
+            content = msg.get("content") or ""
+            for url in URL_RE.findall(content):
+                url = url.rstrip(".,;:)]}>\"'")
+                key = url.lower()
+                if key not in seen_links:
+                    seen_links.add(key)
+                    links.append((url, title, i))
+            for line in content.splitlines():
+                line = line.strip()
+                if line and is_citation(line):
+                    key = line.lower()
+                    if key not in seen_cites:
+                        seen_cites.add(key)
+                        citations.append((line, title, i))
+    return links, citations
+
+
+def render(links, citations):
+    lines = ["## 参考文献与网页链接（供核对）", "", DISCLAIMER, ""]
+    if links:
+        lines.append("### 网页链接")
+        lines.append("")
+        for url, title, idx in links:
+            lines.append(f"- {url}（来源对话：{title}，第 {idx} 条消息）")
+        lines.append("")
+    if citations:
+        lines.append("### 疑似文献引用片段")
+        lines.append("")
+        for cite, title, idx in citations:
+            lines.append(f"- \"{cite}\"（来源对话：{title}，第 {idx} 条消息）")
+        lines.append("")
+    if not links and not citations:
+        lines.append("本段对话未提取到明确的网页链接或文献引用片段。")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("input", help="归一化对话 JSON（parse_deepseek.py 的输出）")
+    parser.add_argument("-o", "--output", default=None, help="输出附录 Markdown 路径（默认 references.md）")
+    parser.add_argument("--append", default=None, help="可选：把附录追加到指定 Markdown 文件末尾")
+    args = parser.parse_args()
+
+    input_path = Path(args.input)
+    if not input_path.exists():
+        sys.exit(f"输入文件不存在: {input_path}")
+    normalized = json.loads(input_path.read_text(encoding="utf-8"))
+    links, citations = extract(normalized)
+    appendix = render(links, citations)
+
+    if args.append:
+        target = Path(args.append)
+        if not target.exists():
+            sys.exit(f"追加目标不存在: {target}")
+        text = target.read_text(encoding="utf-8-sig")
+        if "参考文献与网页链接" not in text:
+            text = text.rstrip() + "\n\n" + appendix
+            target.write_text(text, encoding="utf-8-sig")
+        print(f"已追加到: {target}")
+    else:
+        output = Path(args.output) if args.output else Path("references.md")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(appendix, encoding="utf-8-sig")
+        print(f"已保存: {output}")
+
+    print(f"提取到网页链接 {len(links)} 条、疑似文献引用片段 {len(citations)} 条。")
+
+
+if __name__ == "__main__":
+    main()
