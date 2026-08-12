@@ -1,4 +1,6 @@
-# deepseek-history-organizer
+﻿# deepseek-history-organizer
+
+> 🌐 English version: [README.en.md](README.en.md)（中文为主要语言 / Chinese is the primary language）
 
 把 DeepSeek 对话记录整理成便于快速查看与检索的本地成果：可搜索网页查看器、Markdown 摘要目录、归纳 Word/PDF 文档；支持分享链接批量抓取、附件正文提取、参考文献提取与可靠性核查标记。
 
