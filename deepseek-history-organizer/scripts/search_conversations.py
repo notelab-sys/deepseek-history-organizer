@@ -7,7 +7,7 @@ parse the export once and search it locally here. Matching conversations can
 then be exported as a subset and analyzed one by one.
 
 Usage:
-  python search_conversations.py <conversations.normalized.json> --keywords "花青素,外泌体"
+python search_conversations.py <conversations.normalized.json> --keywords "代谢,调控"
   python search_conversations.py <conversations.normalized.json> --keywords "Turing" --export selected.json
 """
 

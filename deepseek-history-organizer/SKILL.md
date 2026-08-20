@@ -32,13 +32,13 @@ python scripts/fetch_share.py <分享链接或share_id> [...] -o share_data
 2. 由 AI 助手解析后，用关键词在本地检索（search_conversations.py），列出命中对话及上下文片段：
 
 ```bash
-python scripts/search_conversations.py conversations.normalized.json --keywords "花青素,外泌体"
+python scripts/search_conversations.py conversations.normalized.json --keywords "代谢,调控"
 ```
 
 3. 与用户确认要整理哪几段（或直接按命中结果），导出子集：
 
 ```bash
-python scripts/search_conversations.py conversations.normalized.json --keywords "花青素" --export selected.json
+python scripts/search_conversations.py conversations.normalized.json --keywords "代谢" --export selected.json
 ```
 
 4. 对子集里每段对话独立、完整分析（全部内容整体归纳，不切分），各自生成文档，按时间连续编号归档。
@@ -162,7 +162,7 @@ Word 排版按照中文期刊规范格式：正文 Times New Roman + 宋体 10.5
 
 提取参考文献后，用权威数据库逐条核实并标记可靠性：
 
-可先用半自动脚本生成候选核查表（批量调 Crossref 解析 DOI / 书目检索，输出"倾向"标记与最佳匹配，人工只需复核）：
+可先用半自动脚本生成候选核查表（英文文献经 Crossref 解析 DOI / 书目检索 与 PubMed（NCBI E-utilities）双通道核查并带 PMID；中文文献自动提示走知网 CNKI、万方、维普、期刊官网人工核对；输出"倾向"标记与最佳匹配，人工只需复核）：
 
 ```bash
 python scripts/verify_references.py references.md -o references.check.md
@@ -207,7 +207,7 @@ python scripts/verify_references.py references.md -o references.check.md
 - build_markdown.py — 生成 Markdown 摘要目录
 - build_cards.py — 生成速览卡片（cards）与文件夹登记表（catalog）
 - build_pdf.py — Markdown 转 PDF（排版 HTML + Edge 无头打印）
-- verify_references.py — 参考文献半自动核查（Crossref/DOI 批量比对，输出候选表）
+- verify_references.py — 参考文献半自动核查（英文：Crossref + PubMed 双通道；中文：人工核对提示；输出候选表）
 - suggest_similar.py — 对话主题相近提示（字词重合度，供合并决策参考）
 - build_docx.py — Markdown 转 Word（.docx），支持标题/列表/表格/加粗等语法
 - extract_references.py — 提取对话中的网页链接与疑似文献引用，生成带可靠性提示的附录
@@ -215,3 +215,8 @@ python scripts/verify_references.py references.md -o references.check.md
 ### references/
 
 - schema.md — DeepSeek 导出格式说明、归一化结构与各脚本输出说明
+
+## 版本与更新记录
+
+- v1.1（2026-08-20）：文献核查升级为英文 Crossref + PubMed 双通道（带 PMID），中文文献自动提示走知网 CNKI / 万方 / 维普 / 期刊官网人工核对；面向国内外 DeepSeek 用户发布，新增中英双语 README。
+- v1.0：初版（分享链接抓取、本地检索、HTML/MD/Word/PDF 输出、多条对话综合分析、附件正文提取、参考文献提取与核查标记）。

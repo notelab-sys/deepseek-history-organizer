@@ -10,10 +10,11 @@ Organize DeepSeek chat history into local, searchable deliverables: an offline s
 - **Markdown digests**: one file per conversation plus an index.
 - **Summary documents**: Markdown → Word (Chinese journal style) / PDF.
 - **Quick-view cards & registry**: one card per conversation; auto-generated folder registry for archived documents.
+- **Multi-conversation analysis**: each conversation is summarized independently and completely; similar topics can be merged, different topics stay separate, with similarity hints and numbered archiving.
 - **Batch share-link fetching**: when DeepSeek's export page cannot filter specific conversations, fetch them by share links.
 - **Local keyword search**: search the full export locally, then export the selected subset.
 - **Attachment text extraction**: read Word/PDF/Excel attachment content (open-access papers can be supplemented from legitimate sources).
-- **Reference checking**: semi-automated Crossref/DOI resolution producing a candidate table with suggested marks (✅/⚠️/❌) for human review.
+- **Reference checking (EN & ZH)**: English literature is verified via Crossref (DOI/bibliographic) and PubMed (with PMID); Chinese literature is routed to CNKI / Wanfang / VIP / journal sites for manual verification. Produces a candidate table with suggested marks (✅/⚠️/❌) for human review.
 
 ## Requirements
 
@@ -45,7 +46,7 @@ See [使用说明.en.md](使用说明.en.md) for details.
 
 ## Test Record
 
-Eight real conversations have been tested (full pipeline, attachments, reference checking, multi-conversation merging, new tools, deduplication, no-reference scenario, attachment supplementation). Test content is anonymized and listed only by number and scenario type in [测试记录.en.md](测试记录.en.md).
+Nine real conversations have been tested (full pipeline, attachments, reference checking, multi-conversation merging, new tools, deduplication, no-reference scenario, attachment supplementation, genomics-analysis selection). Test content is anonymized and listed only by number and scenario type in [测试记录.en.md](测试记录.en.md).
 
 ## Disclaimer
 

@@ -1,4 +1,4 @@
 interface:
-  display_name: "DeepSeek ¶Ô»°¼ÇÂ¼ÕûÀí"
-  short_description: "°Ñ DeepSeek µ¼³öµÄ¶Ô»°¼ÇÂ¼ÕûÀí³É¿ÉËÑË÷ÍøÒ³»ò Markdown ÕªÒª"
+  display_name: "DeepSeek å¯¹è¯è®°å½•æ•´ç†"
+  short_description: "æŠŠ DeepSeek å¯¼å‡ºçš„å¯¹è¯è®°å½•æ•´ç†æˆå¯æœç´¢ç½‘é¡µã€Markdown æ‘˜è¦æˆ– Word æ–‡æ¡£ï¼Œæ”¯æŒåˆ†äº«é“¾æ¥æŠ“å–ã€é™„ä»¶æ­£æ–‡æå–ä¸å‚è€ƒæ–‡çŒ®æ ¸æŸ¥"
   default_prompt: "Use $deepseek-history-organizer to organize my exported DeepSeek chat archive into a searchable local page."
