@@ -1,6 +1,6 @@
 # DeepSeek History Organizer ｜ DeepSeek 对话记录整理
 
-> Organize, search, summarize and export your DeepSeek chat history — from **share links** or **official exports** — into a searchable HTML viewer, Markdown, Word (Chinese journal style) and PDF, with multi-conversation analysis and reference reliability checking (Crossref + PubMed for English literature, CNKI / Wanfang / VIP routing for Chinese literature).
+> Organize, search, summarize and export your DeepSeek chat history — from **share links** or **official exports** — into a searchable HTML viewer, Markdown, Word (English journal style) and PDF, with multi-conversation analysis and reference reliability checking (Crossref + PubMed for English literature, CNKI / Wanfang / VIP routing for Chinese literature).
 >
 > 把 DeepSeek 历史对话整理成可搜索网页、Markdown、Word（中文期刊规范排版）与 PDF；支持分享链接批量抓取、多条对话综合分析、附件正文提取，以及参考文献可靠性核查（英文走 Crossref + PubMed，中文提示走知网 / 万方 / 维普 / 期刊官网）。
 
