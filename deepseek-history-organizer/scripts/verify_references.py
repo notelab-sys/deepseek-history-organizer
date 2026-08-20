@@ -116,7 +116,10 @@ def suggest_mark(score, found):
 
 def verify_one(ref):
     if CJK_RE.search(ref["line"]) and not ref["doi"] and not ref["surname"]:
-        return _chinese_routing(ref)
+        en_words = re.findall(r"[A-Za-z][A-Za-z0-9'\-]{2,}", ref["line"])
+        # 含中文但内嵌较长英文标题（如“论文一：《The Dendrobium ...》”）时仍尝试英文库
+        if len(en_words) < 4:
+            return _chinese_routing(ref)
     if ref["doi"]:
         try:
             data = fetch_json(f"https://api.crossref.org/works/{urllib.parse.quote(ref['doi'])}")

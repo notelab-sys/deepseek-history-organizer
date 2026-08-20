@@ -161,11 +161,22 @@ Word 排版按照中文期刊规范格式：正文 Times New Roman + 宋体 10.5
 **语言自适应（面向国内外用户）**：归纳文档使用与用户一致的语言撰写——中文用户生成中文文档（默认中文期刊规范排版）；英文用户生成英文文档（英文期刊格式排版），命令加 `--lang en`：
 
 ```bash
-python scripts/build_docx.py 归纳.md -o summary.docx --lang en   # Times New Roman 12pt、1.5 倍行距、加粗标题、APA 悬挂缩进、Page X of Y 页码
-python scripts/build_pdf.py 归纳.md -o summary.pdf --lang en     # 英文期刊 CSS（正文 12pt、行高 1.5、标题加粗、首行缩进 0.5"）
+python scripts/build_docx.py 归纳.md -o summary.docx --lang en   # Times New Roman 12pt、1.5 倍行距、加粗标题、正文首行缩进 1 字符、Page X of Y 页码
+python scripts/build_pdf.py 归纳.md -o summary.pdf --lang en     # 英文期刊 CSS（正文 12pt、行高 1.5、标题加粗、正文首行缩进 1 字符）
 ```
 
+英文模式标题**自动编号**（按层级 1. / 1.1 / 1.1.1 依次排列、严格连续不跳级，无需在 MD 中手写编号）；**正文数字列表自动改为圆点（•）**，避免与标题编号混淆；正文段落与参考文献条目**首行缩进 1 字符（12pt）、其余行顶格**，标题行不缩进、列表顶格，段落间空行区分；参考文献按 Elsevier 作者-年份制著录（Author, A.A., et al., Year. Title. Journal Abbrev. Vol (Issue), pages. DOI），附录引用片段编号用 [1]、[2]…。英文附录用 `extract_references.py --lang en` 生成（标题 "References and Web Links (for verification)"）。
+
 英文 PDF 页码（Page X of Y）由 reportlab 叠加页脚完成（中文 PDF 为"第 X 页 / 共 Y 页"）。
+
+**英文 LaTeX 输出（可选）**：需要学术投稿格式时，可把英文归纳 MD 转为 Elsevier 风格 LaTeX 并编译 PDF（需本机 Tectonic，latex 插件自带）：
+
+```bash
+python scripts/build_latex.py 归纳.md -o summary.tex     # 仅生成 .tex
+python scripts/build_latex.py 归纳.md -o summary.pdf     # 生成 .tex 并编译 PDF
+```
+
+生成的 .tex 使用 elsarticle 文档类，标题编号由 LaTeX 自动生成（1 / 1.1 / 1.1.1），参考文献用 thebibliography（[1]…[n]，Elsevier 作者-年份制文本），支持加粗/斜体/表格/列表；首次编译需联网下载宏包，之后本地缓存。
 
 ### 6.5 可选：参考文献可靠性核查与标记
 
@@ -227,6 +238,8 @@ python scripts/verify_references.py references.md -o references.check.md
 
 ## 版本与更新记录
 
+- v1.4（2026-08-20）：新增英文 LaTeX 输出（build_latex.py，elsarticle 模板 + Tectonic 编译 PDF）。
+- v1.3（2026-08-20）：英文模式标题自动编号（1. / 1.1 / 1.1.1，按层级重置、连续不跳级），正文数字列表改圆点（•）、参考文献区保留数字，正文/列表/参考文献全部顶格、段间空行，标题顶格；extract_references.py 支持 --lang en 英文附录；参考文献支持 Elsevier 作者-年份制。
 - v1.2（2026-08-20）：语言自适应输出——中文用户生成中文期刊规范 Word/PDF，英文用户以 `--lang en` 生成英文期刊格式 Word/PDF（Times New Roman 12pt、加粗标题、APA 悬挂缩进、Page X of Y 页码）；测试例脱敏仅编号。
 - v1.1（2026-08-20）：文献核查升级为英文 Crossref + PubMed 双通道（带 PMID），中文文献自动提示走知网 CNKI / 万方 / 维普 / 期刊官网人工核对；面向国内外 DeepSeek 用户发布，新增中英双语 README。
 - v1.0：初版（分享链接抓取、本地检索、HTML/MD/Word/PDF 输出、多条对话综合分析、附件正文提取、参考文献提取与核查标记）。

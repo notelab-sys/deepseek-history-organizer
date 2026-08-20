@@ -65,11 +65,11 @@ h3 { font-family: "Times New Roman"; font-size: 12pt; font-weight: bold;
      margin: 12pt 0 6pt; }
 h4, h5, h6 { font-family: "Times New Roman"; font-size: 12pt; font-weight: bold;
      margin: 10pt 0 5pt; }
-p { margin: 0 0 8pt; text-indent: 36pt; }
+p { margin: 0 0 8pt; text-indent: 12pt; }
 ul p, ol p, blockquote p { text-indent: 0; }
 blockquote { color: #6e6e6e; font-size: 10.5pt; margin: 8pt 0;
              padding-left: 14pt; border-left: 2px solid #ddd; }
-ul, ol { margin: 4pt 0 10pt; padding-left: 28pt; }
+ul, ol { margin: 4pt 0 10pt; padding-left: 0; list-style-position: inside; }
 li { margin-bottom: 3pt; }
 table { border-collapse: collapse; margin: 10pt auto; font-size: 10.5pt; }
 th, td { border: 1px solid #999; padding: 4pt 8pt; }
@@ -77,12 +77,37 @@ th { background: #f2f2f2; }
 code { font-family: Consolas, monospace; font-size: 10.5pt; background: #f6f6f6;
        padding: 0 2pt; }
 mark { background: #ffe58f; }
-.num { margin: 0 0 4pt; padding-left: 36pt; text-indent: -36pt; }
+.num { margin: 0 0 4pt; padding-left: 0; text-indent: 0; }
+.ref { margin: 0 0 6pt; text-indent: 12pt; }
 .meta { text-align: center; color: #6e6e6e; font-size: 10pt; margin-bottom: 14pt; }
 """
 
 INLINE = re.compile(r"(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)")
 LANG = "zh"
+HEAD_CNT = [0, 0, 0, 0, 0, 0]
+
+
+def numbered_heading(level, text):
+    """Add hierarchical numbers (1. / 1.1 / 1.1.1) to English headings."""
+    global HEAD_CNT
+    if LANG != "en" or level < 2:
+        return text
+    if level == 2:
+        HEAD_CNT[2] += 1
+        HEAD_CNT[3] = HEAD_CNT[4] = HEAD_CNT[5] = 0
+        prefix = f"{HEAD_CNT[2]}."
+    elif level == 3:
+        HEAD_CNT[3] += 1
+        HEAD_CNT[4] = HEAD_CNT[5] = 0
+        prefix = f"{HEAD_CNT[2]}.{HEAD_CNT[3]}"
+    elif level == 4:
+        HEAD_CNT[4] += 1
+        HEAD_CNT[5] = 0
+        prefix = f"{HEAD_CNT[2]}.{HEAD_CNT[3]}.{HEAD_CNT[4]}"
+    else:
+        HEAD_CNT[5] += 1
+        prefix = f"{HEAD_CNT[2]}.{HEAD_CNT[3]}.{HEAD_CNT[4]}.{HEAD_CNT[5]}"
+    return f"{prefix} {text}"
 
 
 def inline_html(text):
@@ -109,6 +134,7 @@ def md_to_html(md_text):
     lines = md_text.splitlines()
     out = []
     i = 0
+    in_refs = False
     while i < len(lines):
         line = lines[i].rstrip()
         s = line.strip()
@@ -133,13 +159,15 @@ def md_to_html(md_text):
         m = re.match(r"^(#{1,6})\s+(.*)$", s)
         if m:
             level = len(m.group(1))
-            text = inline_html(m.group(2).strip())
+            text = inline_html(numbered_heading(level, m.group(2).strip()))
             if level == 1:
                 out.append(f"<h1>{text}</h1>")
             elif level == 2:
                 out.append(f"<h2>{text}</h2>")
             else:
                 out.append(f"<h{level}>{text}</h{level}>")
+            if level <= 2:
+                in_refs = ("参考文献" in m.group(2)) or (LANG == "en" and "reference" in m.group(2).lower())
             i += 1
             continue
         if re.match(r"^---+$", s) or re.match(r"^\*\*\*+$", s):
@@ -157,9 +185,15 @@ def md_to_html(md_text):
                 sm = re.match(r"^[-*+]\s+(.*)$", lines[i].strip())
                 if not sm:
                     break
-                items.append("<li>" + inline_html(sm.group(1).strip()) + "</li>")
+                if in_refs and LANG == "en":
+                    items.append(f'<p class="ref">' + inline_html(sm.group(1).strip()) + "</p>")
+                else:
+                    items.append("<li>" + inline_html(sm.group(1).strip()) + "</li>")
                 i += 1
-            out.append("<ul>" + "".join(items) + "</ul>")
+            if in_refs and LANG == "en":
+                out.extend(items)
+            else:
+                out.append("<ul>" + "".join(items) + "</ul>")
             continue
         m = re.match(r"^(\d+)[.、)]\s+(.*)$", s)
         if m:
@@ -168,7 +202,8 @@ def md_to_html(md_text):
                 sm = re.match(r"^(\d+)[.、)]\s+(.*)$", lines[i].strip())
                 if not sm:
                     break
-                items.append(f'<p class="num">{sm.group(1)}.&nbsp;' + inline_html(sm.group(2).strip()) + "</p>")
+                prefix = f"{sm.group(1)}.&nbsp;" if (in_refs or LANG != "en") else "•&nbsp;"
+                items.append(f'<p class="num">{prefix}' + inline_html(sm.group(2).strip()) + "</p>")
                 i += 1
             out.extend(items)
             continue

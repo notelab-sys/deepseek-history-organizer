@@ -42,6 +42,7 @@ GRAY = RGBColor(0x59, 0x59, 0x59)
 LIGHT = RGBColor(0x6E, 0x6E, 0x6E)
 BLACK = RGBColor(0x14, 0x14, 0x14)
 LANG = "zh"  # zh -> Chinese journal style; en -> English journal style
+H_COUNTER = [0, 0, 0, 0, 0, 0]  # heading counters indexed by level (2..5 used)
 
 
 def _set_east(run, name):
@@ -198,10 +199,10 @@ def add_paragraph(doc, text, size=10.5, bold=False, center=False, gray=False,
                   indent=False, after=3, italicize=True):
     p = doc.add_paragraph()
     p.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
-    p.paragraph_format.space_after = Pt(after)
+    p.paragraph_format.space_after = Pt(8 if LANG == "en" else after)
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER if center else WD_ALIGN_PARAGRAPH.JUSTIFY
-    if indent:
-        p.paragraph_format.first_line_indent = Pt(36) if LANG == "en" else Pt(size * 2)
+    if indent or LANG == "en":
+        p.paragraph_format.first_line_indent = Pt(12 if LANG == "en" else size * 2)
     color = LIGHT if gray else None
     add_runs(p, text, size=size, bold=bold, color=color, italicize=italicize)
     return p
@@ -213,17 +214,20 @@ def add_list_item(doc, text, numbered=False, num=None):
         # its own sequential numbering instead of Word auto-continuing lists.
         p = doc.add_paragraph()
         p.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
-        p.paragraph_format.space_after = Pt(3)
-        li = 36 if LANG == "en" else 24
+        p.paragraph_format.space_after = Pt(4 if LANG == "en" else 3)
+        li = 0 if LANG == "en" else 24
         p.paragraph_format.left_indent = Pt(li)
         p.paragraph_format.first_line_indent = Pt(-li)
         p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        style_run(p.add_run(f"{num or 1}. "), size=12 if LANG == "en" else 10.5)
+        prefix = "• " if LANG == "en" else f"{num or 1}. "
+        style_run(p.add_run(prefix), size=12 if LANG == "en" else 10.5)
         add_runs(p, text)
         return p
     p = doc.add_paragraph(style="List Bullet")
     p.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
-    p.paragraph_format.space_after = Pt(3)
+    p.paragraph_format.space_after = Pt(4 if LANG == "en" else 3)
+    if LANG == "en":
+        p.paragraph_format.left_indent = Pt(0)
     add_runs(p, text)
     return p
 
@@ -231,11 +235,12 @@ def add_list_item(doc, text, numbered=False, num=None):
 def add_reference(doc, text):
     """Hanging-indent reference entry (Chinese 8 pt / English journal 10 pt)."""
     p = doc.add_paragraph()
-    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.space_after = Pt(0 if LANG == "en" else 2)
     if LANG == "en":
         p.paragraph_format.line_spacing = 1.5
-        p.paragraph_format.left_indent = Pt(36)
-        p.paragraph_format.first_line_indent = Pt(-36)
+        p.paragraph_format.space_after = Pt(6)
+        p.paragraph_format.left_indent = Pt(0)
+        p.paragraph_format.first_line_indent = Pt(12)
     else:
         p.paragraph_format.line_spacing = 1.15
         p.paragraph_format.left_indent = Pt(16)
@@ -246,6 +251,24 @@ def add_reference(doc, text):
 
 
 def add_heading(doc, text, level):
+    global H_COUNTER
+    if LANG == "en" and level >= 2:
+        if level == 2:
+            H_COUNTER[2] += 1
+            H_COUNTER[3] = H_COUNTER[4] = H_COUNTER[5] = 0
+            prefix = f"{H_COUNTER[2]}."
+        elif level == 3:
+            H_COUNTER[3] += 1
+            H_COUNTER[4] = H_COUNTER[5] = 0
+            prefix = f"{H_COUNTER[2]}.{H_COUNTER[3]}"
+        elif level == 4:
+            H_COUNTER[4] += 1
+            H_COUNTER[5] = 0
+            prefix = f"{H_COUNTER[2]}.{H_COUNTER[3]}.{H_COUNTER[4]}"
+        else:
+            H_COUNTER[5] += 1
+            prefix = f"{H_COUNTER[2]}.{H_COUNTER[3]}.{H_COUNTER[4]}.{H_COUNTER[5]}"
+        text = f"{prefix} {text}"
     p = doc.add_paragraph()
     p.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
     if level == 1:
@@ -350,6 +373,8 @@ def add_page_number(doc):
 
 
 def build(md_text, output):
+    global H_COUNTER
+    H_COUNTER = [0, 0, 0, 0, 0, 0]
     doc = Document()
     normal = doc.styles["Normal"]
     normal.font.name = LATIN
@@ -385,7 +410,7 @@ def build(md_text, output):
             title = heading.group(2).strip()
             add_heading(doc, title, level)
             if level <= 2:
-                in_refs = "参考文献" in title
+                in_refs = ("参考文献" in title) or (LANG == "en" and "reference" in title.lower())
             i += 1
             continue
 
