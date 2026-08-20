@@ -1,0 +1,71 @@
+﻿# DeepSeek Conversation History Organizer — Usage Guide
+
+## Purpose
+
+Organize DeepSeek conversation history into:
+
+1. **Searchable web page**: conversations grouped by date; keyword search (title/body/attachment name); date-range filter, attachment-only filter, and export of current search results as JSON; double-click index.html to open offline.
+2. **Markdown digest catalog**: index.md master index plus one file per conversation.
+3. **Summary documents**: summarize conversations into Markdown, then convert to Word (standard Chinese journal formatting) or PDF.
+4. **Quick-view cards / registry**: one quick-view card per conversation; auto-generated registry for archived folders.
+
+## Input methods
+
+- **Method A (recommended)**: download DeepSeek's "export all history" zip/JSON, parse it locally with this tool, filter with keyword search, then analyze the selected conversations one by one.
+- **Method B (alternative)**: when DeepSeek's download page cannot filter specific conversations, generate share links for the conversations you want to organize (valid for about 7 days) and batch-fetch them.
+
+## Processing rules
+
+- Multiple conversations: **similar topics may be merged for combined analysis; different topics must be analyzed separately**.
+- Each conversation is analyzed **as a whole** (no splitting or excerpting); one conversation corresponds to one complete document.
+- Documents are numbered consecutively in chronological order (0001-date-topic, 0002-…), placed in a single folder for easy retrieval.
+- The appendix lists only substantive discussion topics: duplicate questions are kept once, simple replies such as "thanks" are omitted, and format-generation requests such as "output as HTML/Word/PDF" are omitted.
+
+## Three-step workflow
+
+```bash
+# 1. Fetch share links (Method B; with Method A, skip to step 2)
+python scripts/fetch_share.py <share-link-or-id> [...] -o share_data
+
+# 2. Parse
+python scripts/parse_deepseek.py <input> -o conversations.normalized.json
+
+# 3. Generate deliverables
+python scripts/build_html.py conversations.normalized.json -o index.html
+python scripts/build_markdown.py conversations.normalized.json -o digests
+python scripts/build_cards.py cards conversations.normalized.json -o .
+python scripts/extract_references.py conversations.normalized.json --append summary.md
+python scripts/build_docx.py summary.md -o summary.docx                # Chinese journal style (default)
+python scripts/build_docx.py summary.md -o summary.docx --lang en      # English journal format
+python scripts/build_pdf.py summary.md -o summary.pdf   # requires Microsoft Edge; add --lang en for English journal format
+```
+
+### Auxiliary tools
+
+- Local search: `python scripts/search_conversations.py conversations.normalized.json --keywords "keyword" --date-from 2024-01-01 --match all --export selected.json`
+- Similar-topic suggestion (assists merge decisions): `python scripts/suggest_similar.py conversations.normalized.json`
+- Folder registry: `python scripts/build_cards.py catalog <archive-folder>`
+- Attachment text extraction: `python scripts/extract_documents.py <attachment-folder> -o docs_extracted.json --txt-dir docs`
+- Semi-automated reference checking: `python scripts/verify_references.py references.md -o references.check.md` (English literature via Crossref + PubMed dual channel with PMID; Chinese literature routed to CNKI / Wanfang / VIP / journal sites for manual verification)
+
+## Script list
+
+| Script | Purpose |
+| --- | --- |
+| fetch_share.py | Batch-fetch share links (saves each as a conversation JSON) |
+| parse_deepseek.py | Parse zip/JSON, normalize conversations and messages |
+| search_conversations.py | Local keyword search (date range, AND/OR, export subset) |
+| suggest_similar.py | Similar-topic suggestions between conversations |
+| build_html.py | Generate searchable web page (filters/export) |
+| build_markdown.py | Generate Markdown digest catalog |
+| build_cards.py | Quick-view cards (cards) and folder registry (catalog) |
+| extract_documents.py | Extract attachment text (Word/PDF/Excel, etc.) |
+| extract_references.py | Extract web links and suspected references from conversations |
+| verify_references.py | Semi-automated reference checking (English: Crossref + PubMed; Chinese: manual routing) |
+| build_docx.py | Markdown → Word (zh Chinese journal / en English journal, --lang) |
+| build_pdf.py | Markdown → PDF (requires Edge; --lang en for English journal format) |
+
+## Notes
+
+- Share links are valid for about 7 days; the share API does not provide attachment file downloads. For public papers, full text can be supplemented through open-access channels (PMC, publisher site, etc.) before extraction.
+- Always verify AI-provided references and conclusions yourself before citing (see [Disclaimer](Disclaimer.en.md)).

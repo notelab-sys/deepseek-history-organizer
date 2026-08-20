@@ -2,7 +2,7 @@
 
 Organize DeepSeek chat history into local, searchable deliverables: an offline searchable web viewer, Markdown digests, and Word/PDF summary documents. It also supports batch fetching of share links, attachment text extraction, and reference extraction with reliability checking.
 
-> ⚠️ This tool organizes and *checks* AI output; it does **not** guarantee the accuracy of AI answers or references. AI-generated references may be fabricated, spliced, or contain errors. Always verify against authoritative databases before citing. See [Disclaimer](免责声明.en.md).
+> ⚠️ This tool organizes and *checks* AI output; it does **not** guarantee the accuracy of AI answers or references. AI-generated references may be fabricated, spliced, or contain errors. Always verify against authoritative databases before citing. See [Disclaimer](Disclaimer.en.md).
 
 ## Features
 
@@ -42,15 +42,15 @@ python scripts/build_docx.py summary.md -o summary.docx
 python scripts/build_pdf.py summary.md -o summary.pdf
 ```
 
-See [使用说明.en.md](使用说明.en.md) for details.
+See [User Guide](UserGuide.en.md) for details.
 
 ## Test Record
 
-Nine real conversations have been tested (full pipeline, attachments, reference checking, multi-conversation merging, new tools, deduplication, no-reference scenario, attachment supplementation, genomics-analysis selection). Test content is anonymized and listed only by number and scenario type in [测试记录.en.md](测试记录.en.md).
+Nine real conversations have been tested (full pipeline, attachments, reference checking, multi-conversation merging, new tools, deduplication, no-reference scenario, attachment supplementation, genomics-analysis selection). Test content is anonymized and listed only by number and scenario type in [Test Record](TestRecord.en.md).
 
 ## Disclaimer
 
-AI-generated references may be unreliable; verification marks are automated "tendency" suggestions for human review only; summaries are AI-generated and should be checked against the original conversations. See [免责声明.en.md](免责声明.en.md) for full terms.
+AI-generated references may be unreliable; verification marks are automated "tendency" suggestions for human review only; summaries are AI-generated and should be checked against the original conversations. See [Disclaimer](Disclaimer.en.md) for full terms.
 
 ## License
 
