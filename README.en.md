@@ -55,3 +55,9 @@ AI-generated references may be unreliable; verification marks are automated "ten
 ## License
 
 MIT (please confirm authorship attribution before public release; see [LICENSE](LICENSE)).
+
+## Feedback
+
+If you encounter any issues or have suggestions, please open an Issue at
+https://github.com/notelab-sys/deepseek-history-organizer/issues. We will review
+and respond in time.

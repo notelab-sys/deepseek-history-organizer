@@ -57,3 +57,7 @@ AI 检索/生成的文献可能编造或不准确；本工具的核查标记为�
 ## 许可证
 
 MIT（发布前请确认作者署名与许可证条款，见 [LICENSE](LICENSE)）。
+
+## 使用反馈
+
+使用中遇到问题或有改进建议，欢迎在 GitHub Issues 提交：https://github.com/notelab-sys/deepseek-history-organizer/issues 。我们会及时查看处理。
