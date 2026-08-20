@@ -10,10 +10,16 @@ Typography follows a Chinese journal style layout:
 - Reference-list entries use a hanging indent at 8 pt with 1.15 line spacing.
 - Centered footer page numbers: 第 X 页 / 共 Y 页.
 
+With --lang en, the layout switches to an English journal style:
+- Body: Times New Roman 12 pt, line spacing 1.5, 0.5-inch first-line indent.
+- Title: Times New Roman bold 16 pt centered; H2 bold 14 pt; H3+ bold 12 pt.
+- Reference-list entries use a 0.5-inch hanging indent at 10 pt.
+- Footer page numbers: Page X of Y.
+
 Multiple Markdown inputs are merged in order (e.g. content + references appendix).
 
 Usage:
-  python build_docx.py <input.md> [...] [-o output.docx]
+  python build_docx.py <input.md> [...] [-o output.docx] [--lang zh|en]
 """
 
 import argparse
@@ -35,6 +41,7 @@ LATIN = "Times New Roman"
 GRAY = RGBColor(0x59, 0x59, 0x59)
 LIGHT = RGBColor(0x6E, 0x6E, 0x6E)
 BLACK = RGBColor(0x14, 0x14, 0x14)
+LANG = "zh"  # zh -> Chinese journal style; en -> English journal style
 
 
 def _set_east(run, name):
@@ -190,11 +197,11 @@ def add_runs(p, text, size=10.5, bold=False, color=None, italicize=True):
 def add_paragraph(doc, text, size=10.5, bold=False, center=False, gray=False,
                   indent=False, after=3, italicize=True):
     p = doc.add_paragraph()
-    p.paragraph_format.line_spacing = 1.3
+    p.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
     p.paragraph_format.space_after = Pt(after)
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER if center else WD_ALIGN_PARAGRAPH.JUSTIFY
     if indent:
-        p.paragraph_format.first_line_indent = Pt(size * 2)
+        p.paragraph_format.first_line_indent = Pt(36) if LANG == "en" else Pt(size * 2)
     color = LIGHT if gray else None
     add_runs(p, text, size=size, bold=bold, color=color, italicize=italicize)
     return p
@@ -205,60 +212,81 @@ def add_list_item(doc, text, numbered=False, num=None):
         # Render the source number literally (1, 2, 3 ...) so each list keeps
         # its own sequential numbering instead of Word auto-continuing lists.
         p = doc.add_paragraph()
-        p.paragraph_format.line_spacing = 1.3
+        p.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
         p.paragraph_format.space_after = Pt(3)
-        p.paragraph_format.left_indent = Pt(24)
-        p.paragraph_format.first_line_indent = Pt(-24)
+        li = 36 if LANG == "en" else 24
+        p.paragraph_format.left_indent = Pt(li)
+        p.paragraph_format.first_line_indent = Pt(-li)
         p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        style_run(p.add_run(f"{num or 1}. "), size=10.5)
+        style_run(p.add_run(f"{num or 1}. "), size=12 if LANG == "en" else 10.5)
         add_runs(p, text)
         return p
     p = doc.add_paragraph(style="List Bullet")
-    p.paragraph_format.line_spacing = 1.3
+    p.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
     p.paragraph_format.space_after = Pt(3)
     add_runs(p, text)
     return p
 
 
 def add_reference(doc, text):
-    """Hanging-indent reference entry (中文期刊规范样式, 8 pt)."""
+    """Hanging-indent reference entry (Chinese 8 pt / English journal 10 pt)."""
     p = doc.add_paragraph()
     p.paragraph_format.space_after = Pt(2)
-    p.paragraph_format.line_spacing = 1.15
-    p.paragraph_format.left_indent = Pt(16)
-    p.paragraph_format.first_line_indent = Pt(-16)
+    if LANG == "en":
+        p.paragraph_format.line_spacing = 1.5
+        p.paragraph_format.left_indent = Pt(36)
+        p.paragraph_format.first_line_indent = Pt(-36)
+    else:
+        p.paragraph_format.line_spacing = 1.15
+        p.paragraph_format.left_indent = Pt(16)
+        p.paragraph_format.first_line_indent = Pt(-16)
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    add_runs(p, text, size=8)
+    add_runs(p, text, size=10 if LANG == "en" else 8)
     return p
 
 
 def add_heading(doc, text, level):
     p = doc.add_paragraph()
-    p.paragraph_format.line_spacing = 1.3
+    p.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
     if level == 1:
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.space_after = Pt(3)
         r = p.add_run(text)
-        r.font.name = EAST_HEAD
-        _set_east(r, EAST_HEAD)
-        r.font.size = Pt(20)
+        if LANG == "en":
+            r.font.name = LATIN
+            r.font.size = Pt(16)
+            r.font.bold = True
+        else:
+            r.font.name = EAST_HEAD
+            _set_east(r, EAST_HEAD)
+            r.font.size = Pt(20)
         r.font.color.rgb = BLACK
         return p
     if level == 2:
         p.paragraph_format.space_before = Pt(10)
         p.paragraph_format.space_after = Pt(5)
         r = p.add_run(text)
-        _set_east(r, EAST)
-        r.font.size = Pt(14)
+        if LANG == "en":
+            r.font.name = LATIN
+            r.font.size = Pt(14)
+            r.font.bold = True
+        else:
+            _set_east(r, EAST)
+            r.font.size = Pt(14)
         r.font.color.rgb = BLACK
         return p
     p.paragraph_format.space_before = Pt(8 if level == 3 else 6)
     p.paragraph_format.space_after = Pt(3)
     r = p.add_run(text)
-    r.font.name = EAST_HEAD
-    _set_east(r, EAST_HEAD)
-    r.font.size = Pt(11 if level == 3 else 10.5)
-    r.font.bold = level >= 4
+    if LANG == "en":
+        r.font.name = LATIN
+        r.font.size = Pt(12 if level == 3 else 12)
+        r.font.bold = True
+    else:
+        r.font.name = EAST_HEAD
+        _set_east(r, EAST_HEAD)
+        r.font.size = Pt(11 if level == 3 else 10.5)
+        r.font.bold = level >= 4
     r.font.color.rgb = BLACK
     return p
 
@@ -278,7 +306,7 @@ def add_table(doc, rows):
             val = row[j] if j < len(row) else ""
             cells[j].text = ""
             p = cells[j].paragraphs[0]
-            add_runs(p, val, size=9.5, bold=(i == 0), italicize=False)
+            add_runs(p, val, size=10 if LANG == "en" else 9.5, bold=(i == 0), italicize=False)
     doc.add_paragraph()
 
 
@@ -308,20 +336,26 @@ def add_page_number(doc):
         r.font.size = Pt(9)
         _set_east(r, EAST)
 
-    text_run("第 ")
-    field(" PAGE ")
-    text_run(" 页 / 共 ")
-    field(" NUMPAGES ")
-    text_run(" 页")
+    if LANG == "en":
+        text_run("Page ")
+        field(" PAGE ")
+        text_run(" of ")
+        field(" NUMPAGES ")
+    else:
+        text_run("第 ")
+        field(" PAGE ")
+        text_run(" 页 / 共 ")
+        field(" NUMPAGES ")
+        text_run(" 页")
 
 
 def build(md_text, output):
     doc = Document()
     normal = doc.styles["Normal"]
     normal.font.name = LATIN
-    normal.font.size = Pt(10.5)
+    normal.font.size = Pt(12 if LANG == "en" else 10.5)
     normal.element.rPr.rFonts.set(qn("w:eastAsia"), EAST)
-    normal.paragraph_format.line_spacing = 1.3
+    normal.paragraph_format.line_spacing = 1.5 if LANG == "en" else 1.3
 
     lines = md_text.splitlines()
     i = 0
@@ -361,7 +395,8 @@ def build(md_text, output):
 
         if stripped.startswith(">"):
             add_paragraph(doc, stripped.lstrip(">").strip(), gray=True,
-                          size=8.5 if in_refs else 9.5, indent=False)
+                          size=(10 if LANG == "en" else 8.5) if in_refs else (10.5 if LANG == "en" else 9.5),
+                          indent=False)
             i += 1
             continue
 
@@ -385,7 +420,7 @@ def build(md_text, output):
             continue
 
         add_paragraph(doc, stripped,
-                      size=9 if in_refs else 10.5,
+                      size=(10 if LANG == "en" else 9) if in_refs else (12 if LANG == "en" else 10.5),
                       gray=in_refs,
                       indent=not in_refs)
         i += 1
@@ -408,10 +443,13 @@ def verify(output):
 
 
 def main():
+    global LANG
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("inputs", nargs="+", help="Markdown 文件路径（多个时按顺序合并）")
     parser.add_argument("-o", "--output", default=None, help="输出 Word 路径（默认与输入同名 .docx）")
+    parser.add_argument("--lang", choices=["zh", "en"], default="zh", help="排版语言：zh=中文期刊规范（默认），en=英文期刊格式")
     args = parser.parse_args()
+    LANG = args.lang
 
     parts = []
     for name in args.inputs:

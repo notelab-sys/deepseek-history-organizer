@@ -8,7 +8,7 @@ Organize DeepSeek chat history into local, searchable deliverables: an offline s
 
 - **Searchable web viewer**: grouped by date, keyword search with highlighting, date-range/attachment filters, and export of search results as JSON. Single offline HTML file.
 - **Markdown digests**: one file per conversation plus an index.
-- **Summary documents**: Markdown → Word (Chinese journal style) / PDF.
+- **Summary documents (language-adaptive)**: Markdown → Word / PDF. Chinese users get Chinese journal typography by default; English users can pass `--lang en` for English journal formatting (Times New Roman 12 pt, bold headings, APA hanging indent, "Page X of Y").
 - **Quick-view cards & registry**: one card per conversation; auto-generated folder registry for archived documents.
 - **Multi-conversation analysis**: each conversation is summarized independently and completely; similar topics can be merged, different topics stay separate, with similarity hints and numbered archiving.
 - **Batch share-link fetching**: when DeepSeek's export page cannot filter specific conversations, fetch them by share links.

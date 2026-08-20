@@ -53,7 +53,36 @@ mark { background: #ffe58f; }
 .meta { text-align: center; color: #6e6e6e; font-size: 9pt; margin-bottom: 12pt; }
 """
 
+EN_CSS = """
+@page { size: A4; margin: 25mm 25mm; }
+body { font-family: "Times New Roman", serif; font-size: 12pt;
+       line-height: 1.5; color: #141414; text-align: justify; }
+h1 { font-family: "Times New Roman"; font-size: 16pt; font-weight: bold;
+     text-align: center; margin: 0 0 12pt; }
+h2 { font-family: "Times New Roman"; font-size: 14pt; font-weight: bold;
+     margin: 16pt 0 8pt; }
+h3 { font-family: "Times New Roman"; font-size: 12pt; font-weight: bold;
+     margin: 12pt 0 6pt; }
+h4, h5, h6 { font-family: "Times New Roman"; font-size: 12pt; font-weight: bold;
+     margin: 10pt 0 5pt; }
+p { margin: 0 0 8pt; text-indent: 36pt; }
+ul p, ol p, blockquote p { text-indent: 0; }
+blockquote { color: #6e6e6e; font-size: 10.5pt; margin: 8pt 0;
+             padding-left: 14pt; border-left: 2px solid #ddd; }
+ul, ol { margin: 4pt 0 10pt; padding-left: 28pt; }
+li { margin-bottom: 3pt; }
+table { border-collapse: collapse; margin: 10pt auto; font-size: 10.5pt; }
+th, td { border: 1px solid #999; padding: 4pt 8pt; }
+th { background: #f2f2f2; }
+code { font-family: Consolas, monospace; font-size: 10.5pt; background: #f6f6f6;
+       padding: 0 2pt; }
+mark { background: #ffe58f; }
+.num { margin: 0 0 4pt; padding-left: 36pt; text-indent: -36pt; }
+.meta { text-align: center; color: #6e6e6e; font-size: 10pt; margin-bottom: 14pt; }
+"""
+
 INLINE = re.compile(r"(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)")
+LANG = "zh"
 
 
 def inline_html(text):
@@ -160,9 +189,11 @@ def build(md_text, output):
     if not edge:
         sys.exit("未找到 Microsoft Edge，无法生成 PDF；请安装 Edge 或改用 build_docx.py 生成 Word。")
     body = md_to_html(md_text)
+    css = EN_CSS if LANG == "en" else CSS
+    lang_attr = "en" if LANG == "en" else "zh-CN"
     html_text = (
-        "<!DOCTYPE html><html lang='zh-CN'><head><meta charset='utf-8'>"
-        f"<style>{CSS}</style></head><body>{body}</body></html>"
+        f"<!DOCTYPE html><html lang='{lang_attr}'><head><meta charset='utf-8'>"
+        f"<style>{css}</style></head><body>{body}</body></html>"
     )
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -191,10 +222,13 @@ def build(md_text, output):
 
 
 def main():
+    global LANG
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("inputs", nargs="+", help="Markdown 文件路径（多个时按顺序合并）")
     parser.add_argument("-o", "--output", default=None, help="输出 PDF 路径（默认与输入同名 .pdf）")
+    parser.add_argument("--lang", choices=["zh", "en"], default="zh", help="排版语言：zh=中文期刊规范（默认），en=英文期刊格式")
     args = parser.parse_args()
+    LANG = args.lang
     parts = []
     for name in args.inputs:
         input_path = Path(name)

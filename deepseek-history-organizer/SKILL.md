@@ -158,6 +158,15 @@ Word 排版按照中文期刊规范格式：正文 Times New Roman + 宋体 10.5
 
 `extract_references.py` 会把对话中助手消息里的网页链接和疑似文献引用片段提取出来，追加"参考文献与网页链接（供核对）"一节，并附固定可靠性提示：AI 检索/生成的文献可能编造或不准确，须与权威数据库核对，对话分析结论仅供参考。该步骤即使没有提取到链接也会追加提示，便于日后核对。
 
+**语言自适应（面向国内外用户）**：归纳文档使用与用户一致的语言撰写——中文用户生成中文文档（默认中文期刊规范排版）；英文用户生成英文文档（英文期刊格式排版），命令加 `--lang en`：
+
+```bash
+python scripts/build_docx.py 归纳.md -o summary.docx --lang en   # Times New Roman 12pt、1.5 倍行距、加粗标题、APA 悬挂缩进、Page X of Y 页码
+python scripts/build_pdf.py 归纳.md -o summary.pdf --lang en     # 英文期刊 CSS（正文 12pt、行高 1.5、标题加粗、首行缩进 0.5"）
+```
+
+英文 PDF 页码（Page X of Y）由 reportlab 叠加页脚完成（中文 PDF 为"第 X 页 / 共 Y 页"）。
+
 ### 6.5 可选：参考文献可靠性核查与标记
 
 提取参考文献后，用权威数据库逐条核实并标记可靠性：
@@ -218,5 +227,6 @@ python scripts/verify_references.py references.md -o references.check.md
 
 ## 版本与更新记录
 
+- v1.2（2026-08-20）：语言自适应输出——中文用户生成中文期刊规范 Word/PDF，英文用户以 `--lang en` 生成英文期刊格式 Word/PDF（Times New Roman 12pt、加粗标题、APA 悬挂缩进、Page X of Y 页码）；测试例脱敏仅编号。
 - v1.1（2026-08-20）：文献核查升级为英文 Crossref + PubMed 双通道（带 PMID），中文文献自动提示走知网 CNKI / 万方 / 维普 / 期刊官网人工核对；面向国内外 DeepSeek 用户发布，新增中英双语 README。
 - v1.0：初版（分享链接抓取、本地检索、HTML/MD/Word/PDF 输出、多条对话综合分析、附件正文提取、参考文献提取与核查标记）。

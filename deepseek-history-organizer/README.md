@@ -14,8 +14,8 @@
   **Multi-conversation analysis**: each conversation is summarized independently and completely; similar topics can be merged, different topics stay separate, with similarity hints, numbered archiving and a catalog.
 - **可搜索 HTML 查看器**：离线单文件，支持关键词搜索、日期范围筛选、附件筛选、导出检索结果。
   **Searchable HTML viewer**: offline single file with keyword search, date-range/attachment filters and result export.
-- **多格式输出**：Markdown / Word（中文期刊规范排版：黑体标题、宋体正文、行距、页脚页码）/ PDF。
-  **Multi-format output**: Markdown / Word (Chinese journal typography with page numbers) / PDF.
+- **多格式输出 + 语言自适应**：Markdown / Word / PDF；中文用户输出中文期刊规范排版（黑体标题、宋体正文、页脚页码），英文用户以 `--lang en` 输出英文期刊格式（Times New Roman 12pt、加粗标题、APA 悬挂缩进、Page X of Y 页码）。
+  **Multi-format output with language adaptation**: Markdown / Word / PDF. Chinese users get Chinese journal typography; English users can pass `--lang en` for English journal formatting (Times New Roman 12 pt, bold headings, APA hanging indent, "Page X of Y").
 - **附件正文提取**：读取对话附件的 Word / PDF / Excel / PPT 等正文，供归纳参考。
   **Attachment text extraction**: read text from attached Word / PDF / Excel / PPT files.
 - **参考文献可靠性核查（中英文）**：自动提取对话中的网页链接与疑似文献引用；英文文献经 Crossref + PubMed 双通道核查（带 PMID），中文文献提示经知网 CNKI、万方、维普、期刊官网人工核对；输出 ✅/⚠️/❌ 倾向标记表。
