@@ -1,0 +1,65 @@
+﻿# deepseek-history-organizer
+
+Organize DeepSeek chat history into local, searchable deliverables: an offline searchable web viewer, Markdown digests, and Word/PDF summary documents. It also supports batch fetching of share links, attachment text extraction, and reference extraction with reliability checking.
+
+
+
+> ⚠️ This tool organizes and *checks* AI output; it does **not** guarantee the accuracy of AI answers or references. AI-generated references may be fabricated, spliced, or contain errors. Always verify against authoritative databases before citing. See [Disclaimer](Disclaimer.en.md).
+
+## Features
+
+- **Searchable web viewer**: grouped by date, keyword search with highlighting, date-range/attachment filters, and export of search results as JSON. Single offline HTML file.
+- **Markdown digests**: one file per conversation plus an index.
+- **Summary documents (language-adaptive)**: Markdown → Word / PDF. Chinese users get Chinese journal typography by default; English users can pass `--lang en` for English journal formatting (Times New Roman 12 pt, bold headings, APA hanging indent, "Page X of Y").
+- **Quick-view cards & registry**: one card per conversation; auto-generated folder registry for archived documents.
+- **Multi-conversation analysis**: each conversation is summarized independently and completely; similar topics can be merged, different topics stay separate, with similarity hints and numbered archiving.
+- **Batch share-link fetching**: when DeepSeek's export page cannot filter specific conversations, fetch them by share links.
+- **Local keyword search**: search the full export locally, then export the selected subset.
+- **Attachment text extraction**: read Word/PDF/Excel attachment content (open-access papers can be supplemented from legitimate sources).
+- **Reference checking (EN & ZH)**: English literature is verified via Crossref (DOI/bibliographic) and PubMed (with PMID); Chinese literature is routed to CNKI / Wanfang / VIP / journal sites for manual verification. Produces a candidate table with suggested marks (✅/⚠️/❌) for human review.
+
+## Requirements
+
+- Python 3 (recommended: python-docx, pypdf/pdfplumber, openpyxl)
+- Microsoft Edge installed locally for PDF generation
+- Optional: OfficeCLI (`officecli view <file> text`) for Office documents
+
+## Quick Start
+
+```bash
+# 1. Fetch share links (optional; you can also parse DeepSeek export files/folders)
+python scripts/fetch_share.py <share-link-or-id> [...] -o share_data
+
+# 2. Parse & normalize
+python scripts/parse_deepseek.py <zip/JSON/folder> -o conversations.normalized.json
+
+# 3. Generate deliverables
+python scripts/build_html.py conversations.normalized.json -o index.html
+python scripts/build_markdown.py conversations.normalized.json -o digests
+python scripts/build_cards.py cards conversations.normalized.json -o .
+
+# 4. Summarize and export Word/PDF
+python scripts/extract_references.py conversations.normalized.json --append summary.md
+python scripts/build_docx.py summary.md -o summary.docx
+python scripts/build_pdf.py summary.md -o summary.pdf
+```
+
+See [User Guide](UserGuide.en.md) for details.
+
+## Test Record
+
+Nine real conversations have been tested (full pipeline, attachments, reference checking, multi-conversation merging, new tools, deduplication, no-reference scenario, attachment supplementation, genomics-analysis selection). Test content is anonymized and listed only by number and scenario type in [Test Record](TestRecord.en.md).
+
+## Disclaimer
+
+AI-generated references may be unreliable; verification marks are automated "tendency" suggestions for human review only; summaries are AI-generated and should be checked against the original conversations. See [Disclaimer](Disclaimer.en.md) for full terms.
+
+## License
+
+MIT (please confirm authorship attribution before public release; see [LICENSE](LICENSE)).
+
+## Feedback
+
+If you encounter any issues or have suggestions, please open an Issue at
+https://github.com/notelab-sys/deepseek-history-organizer/issues. We will review
+and respond in time.

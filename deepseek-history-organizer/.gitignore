@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+share_data/
+conversations.normalized.json
+index.html
+digests/
+*.docx
+*.pdf
